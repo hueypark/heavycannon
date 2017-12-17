@@ -62,6 +62,16 @@ func (w *World) SetBodyPosition(id int64, pos vector.Vector) {
 	}
 }
 
+func (w *World) SetBodyVelocity(id int64, vel vector.Vector) {
+	w.mux.Lock()
+	defer w.mux.Unlock()
+
+	b := w.bodys[id]
+	if b != nil {
+		b.Velocity = vel
+	}
+}
+
 func (w *World) Bodys() map[int64]*body.Body {
 	return w.bodys
 }
