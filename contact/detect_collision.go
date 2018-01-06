@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/heavycannon/heavycannon/body"
+	"github.com/heavycannon/heavycannon/closest_point"
 	"github.com/heavycannon/heavycannon/math/rotator"
 	"github.com/heavycannon/heavycannon/math/vector"
 	"github.com/heavycannon/heavycannon/shape"
@@ -153,27 +154,43 @@ func circleToConvex(l, r *body.Body) (normal vector.Vector, penetration float64,
 	rConvex := r.Shape.(*convex.Convex)
 
 	minPenetration := math.MaxFloat64
+	var minPenEdge convex.Edge
 	for _, edge := range rConvex.Edges() {
 		edgeNormal := r.Rotation().RotateVector(edge.Normal)
 		edgeStart := r.Rotation().RotateVector(edge.Start)
 
-		p := -vector.Dot(edgeNormal, vector.Subtract(l.Position(), vector.Add(r.Position(), edgeStart)))
+		pen := -vector.Dot(edgeNormal, vector.Subtract(l.Position(), vector.Add(r.Position(), edgeStart)))
 
-		if p < -lCircle.Radius {
-			return normal, penetration, points
+		if pen < -lCircle.Radius {
+			return vector.ZERO(), 0, nil
 		}
 
-		if p < minPenetration {
-			minPenetration = p
-			normal = edgeNormal
+		if pen < minPenetration {
+			minPenetration = pen
+			minPenEdge = edge
 		}
 	}
 
-	normal.Invert()
-	penetration = lCircle.Radius + minPenetration
-	points = append(points, vector.Add(
-		l.Position(),
-		vector.Add(vector.Multiply(normal, lCircle.Radius), vector.Multiply(normal, -0.5*penetration))))
+	edgeStart := vector.Add(r.Position(), r.Rotation().RotateVector(minPenEdge.Start))
+	edgeEnd := vector.Add(r.Position(), r.Rotation().RotateVector(minPenEdge.End))
+	edgeNormal := r.Rotation().RotateVector(minPenEdge.Normal)
+
+	p := closest_point.LineSegmentToPoint(l.Position(), edgeStart, edgeEnd)
+	if 0 < vector.Dot(edgeNormal, vector.Subtract(p, l.Position())) {
+		normal = vector.Subtract(l.Position(), p)
+
+		penetration = lCircle.Radius + vector.Subtract(l.Position(), p).Size()
+	} else {
+		normal = vector.Subtract(p, l.Position())
+		if lCircle.Radius < normal.Size() {
+			return vector.ZERO(), 0, nil
+		}
+
+		penetration = lCircle.Radius - vector.Subtract(p, l.Position()).Size()
+	}
+
+	normal.Normalize()
+	points = append(points, vector.Add(p, vector.Multiply(normal, 0.5*penetration)))
 
 	return normal, penetration, points
 }
