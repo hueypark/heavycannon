@@ -21,6 +21,7 @@ func New(lhs, rhs *body.Body) *Contact {
 
 func (c *Contact) SolveCollision() {
 	c.addImpulse()
+	c.solvePenetration()
 }
 
 func (c *Contact) Points() []vector.Vector {
@@ -53,5 +54,15 @@ func (c *Contact) addImpulse() {
 
 		c.lhs.AddImpluse(vector.Multiply(impulse, -1))
 		c.rhs.AddImpluse(impulse)
+	}
+}
+
+func (c *Contact) solvePenetration() {
+	if !c.lhs.Static() {
+		c.lhs.SetPosition(vector.Add(c.lhs.Position(), vector.Multiply(c.normal, c.penetration*-0.5)))
+	}
+
+	if !c.rhs.Static() {
+		c.rhs.SetPosition(vector.Add(c.rhs.Position(), vector.Multiply(c.normal, c.penetration*0.5)))
 	}
 }

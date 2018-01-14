@@ -83,6 +83,14 @@ func (r *Body) SetStatic() {
 	r.inverseMass = 0
 }
 
+func (r *Body) Static() bool {
+	if r.inverseMass == 0 {
+		return true
+	}
+
+	return false
+}
+
 func (r *Body) SetShape(s shape) {
 	r.Shape = s
 }
