@@ -219,7 +219,7 @@ func convexToConvex(l, r *body.Body) (normal vector.Vector, penetration float64,
 		points = append(points, rPoint)
 	}
 
-	return normal, -penetration, points
+	return normal, penetration, points
 }
 
 func findAxisLeastPenetration(l, r *convex.Convex, lPos, rPos vector.Vector, lRot, rRot rotator.Rotator) (minPenetration float64, bestNormal vector.Vector, bestPoint vector.Vector) {
