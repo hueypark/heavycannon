@@ -35,7 +35,7 @@ func (w *World) Tick(delta float64) {
 	}
 
 	for _, b := range w.bodys {
-		b.AddForce(w.gravity)
+		b.AddForce(vector.Multiply(w.gravity, b.Mass()))
 		b.Tick(delta)
 	}
 }

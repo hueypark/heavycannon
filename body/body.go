@@ -13,6 +13,7 @@ type Body struct {
 	Velocity        vector.Vector
 	angularVelocity float64
 	Shape           shape
+	mass            float64
 	inverseMass     float64
 	inverseInertia  float64
 	forceSum        vector.Vector
@@ -71,8 +72,13 @@ func (r *Body) Tick(delta float64) {
 }
 
 func (r *Body) SetMass(mass float64) {
+	r.mass = mass
 	r.inverseMass = 1.0 / mass
 	r.inverseInertia = 1.0 / mass
+}
+
+func (r *Body) Mass() float64 {
+	return r.mass
 }
 
 func (r *Body) InverseMass() float64 {
@@ -99,6 +105,7 @@ func (r *Body) AddForce(force vector.Vector) {
 	r.forceSum.Add(force)
 }
 
-func (r *Body) AddImpluse(impulse vector.Vector) {
+func (r *Body) AddImpluse(impulse, contact vector.Vector) {
 	r.Velocity.AddScaledVector(impulse, r.inverseMass)
+	r.angularVelocity -= vector.Cross(contact, impulse) * r.inverseInertia * 0.01
 }
