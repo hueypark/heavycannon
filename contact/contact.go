@@ -37,7 +37,7 @@ func (c *Contact) Penetration() float64 {
 }
 
 func (c *Contact) addImpulse() {
-	for range c.points {
+	for _, p := range c.points {
 		relativeVelocity := vector.Subtract(c.rhs.Velocity, c.lhs.Velocity)
 
 		velAlongNormal := vector.Dot(relativeVelocity, c.normal)
@@ -52,8 +52,8 @@ func (c *Contact) addImpulse() {
 		impulse := vector.Multiply(c.normal, contactVelocity)
 		impulse.Multiply(1 / inverseMassSum)
 
-		c.lhs.AddImpluse(vector.Multiply(impulse, -1))
-		c.rhs.AddImpluse(impulse)
+		c.lhs.AddImpluse(vector.Multiply(impulse, -1), vector.Subtract(c.lhs.Position(), p))
+		c.rhs.AddImpluse(impulse, vector.Subtract(c.rhs.Position(), p))
 	}
 }
 
